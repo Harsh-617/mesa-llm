@@ -29,7 +29,7 @@ class ShortTermMemory(Memory):
             display=display,
         )
         self.n = n
-        self.short_term_memory = deque()
+        self.short_term_memory = deque(maxlen=self.n)
 
     def process_step(self, pre_step: bool = False):
         """
@@ -49,7 +49,7 @@ class ShortTermMemory(Memory):
             self.step_content = {}
             return
 
-        elif not self.short_term_memory[-1].content.get("step", None):
+        elif self.short_term_memory and self.short_term_memory[-1].step is None:
             pre_step = self.short_term_memory.pop()
             self.step_content.update(pre_step.content)
             new_entry = MemoryEntry(
