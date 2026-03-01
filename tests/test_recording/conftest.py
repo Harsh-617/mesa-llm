@@ -47,7 +47,7 @@ def sample_recording_data():
             "end_time": "2024-01-01T10:05:00Z",
             "model_class": "TestModel",
             "total_steps": 5,
-            "total_events": 10,
+            "total_events": 7,
             "total_agents": 2,
             "duration_minutes": 5.0,
             "completion_status": "completed",

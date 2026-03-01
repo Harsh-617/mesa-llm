@@ -14,10 +14,9 @@ if TYPE_CHECKING:
 class TestMemoryEntry:
     """Test the MemoryEntry dataclass"""
 
-    def test_memory_entry_creation(self):
+    def test_memory_entry_creation(self, mock_agent):
         """Test MemoryEntry creation and basic functionality"""
 
-        mock_agent = Mock()
         content = {"observation": "Test content", "metadata": "value"}
         entry = MemoryEntry(content=content, step=1, agent=mock_agent)
 
@@ -25,10 +24,9 @@ class TestMemoryEntry:
         assert entry.step == 1
         assert entry.agent == mock_agent
 
-    def test_memory_entry_str(self):
+    def test_memory_entry_str(self, mock_agent):
         """Test MemoryEntry string representation"""
 
-        mock_agent = Mock()
         content = {"observation": "Test content", "type": "observation"}
         entry = MemoryEntry(content=content, step=1, agent=mock_agent)
 
@@ -76,8 +74,7 @@ class TestMemoryParent:
         memory = MemoryMock(agent=mock_agent)
         assert not hasattr(memory, "llm")
 
-    def test_add_to_memory(self):
-        mock_agent = Mock()
+    def test_add_to_memory(self, mock_agent):
         memory = MemoryMock(agent=mock_agent)
         # Test basic addition with observation
         memory.add_to_memory("observation", {"step": 1, "content": "Test content"})
