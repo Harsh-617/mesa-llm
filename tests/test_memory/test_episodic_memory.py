@@ -70,6 +70,24 @@ class TestEpisodicMemory:
             "add_to_memory graded the event but never created a MemoryEntry"
         )
 
+    def test_finalize_entry_consistency(self, mock_agent):
+        """Minimal tests for the helper function _finalize_event_entry().
+        - This test ensures that:
+        - A `MemoryEntry` object is created and stored in episodic memory.
+        - The graded content is forwarded to the base `Memory.step_content` via `super().add_to_memory()` (regression guard).
+        - The stored entry contains the correct importance score.
+        - The entry is stamped with the current agent step.
+        """
+        memory = EpisodicMemory(agent=mock_agent, llm_model="provider/test_model")
+        graded_content = {"data": "test", "importance": 4}
+
+        memory._finalize_entry("observation", graded_content)
+
+        assert memory.memory_entries[0].content["observation"]["importance"] == 4
+        assert memory.step_content["observation"]["importance"] == 4
+        assert isinstance(memory.memory_entries[0], MemoryEntry)
+        assert memory.memory_entries[0].step == mock_agent.model.steps
+
     def test_grade_event_importance(self, mock_agent):
         """Test grading event importance"""
         memory = EpisodicMemory(agent=mock_agent, llm_model="provider/test_model")
@@ -206,6 +224,11 @@ class TestEpisodicMemory:
         await memory.aadd_to_memory("planning", {"plan": "Test plan"})
         await memory.aadd_to_memory("action", {"action": "Test action"})
 
+        new_entry = memory.memory_entries[0]
+
+        for new_entry in memory.memory_entries:
+            event_type = next(iter(new_entry.content.keys()))
+            assert new_entry.content[event_type]["importance"] == 3
         # checks to ensure that step content is not empty
         assert memory.step_content != {}
         assert len(memory.memory_entries) == 3, (

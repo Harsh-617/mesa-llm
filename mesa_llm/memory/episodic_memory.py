@@ -124,23 +124,25 @@ class EpisodicMemory(Memory):
 
         return top_list[:k]
 
-    def add_to_memory(self, type: str, content: dict):
-        """
-        grading logic + Add a new memory entry to the memory
-        """
-        graded_content = {
-            **content,
-            "importance": self.grade_event_importance(type, content),
-        }
-
+    def _finalize_entry(self, type: str, graded_content: dict):
+        """Shared function for both sync/async add to memory which helps to create memory entry and stores it into a base class."""
         new_entry = MemoryEntry(
             agent=self.agent,
             content={type: graded_content},
             step=self.agent.model.steps,
         )
         self.memory_entries.append(new_entry)
+        super().add_to_memory(type, graded_content)
 
-        super().add_to_memory(type, content)
+    def add_to_memory(self, type: str, content: dict):
+        """
+        grading logic + adding to memory function call
+        """
+        graded_content = {
+            **content,
+            "importance": self.grade_event_importance(type, content),
+        }
+        self._finalize_entry(type, graded_content)
 
     async def aadd_to_memory(self, type: str, content: dict):
         """
@@ -150,15 +152,7 @@ class EpisodicMemory(Memory):
             **content,
             "importance": await self.agrade_event_importance(type, content),
         }
-
-        new_entry = MemoryEntry(
-            agent=self.agent,
-            content={type: graded_content},
-            step=self.agent.model.steps,
-        )
-        self.memory_entries.append(new_entry)
-
-        super().add_to_memory(type, content)
+        self._finalize_entry(type, graded_content)
 
     def get_prompt_ready(self) -> str:
         return f"Top {self.considered_entries} memory entries:\n\n" + "\n".join(
